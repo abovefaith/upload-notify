@@ -1,0 +1,6 @@
+<div>
+  <h2>Upload File to Civo Object Store</h2>
+  <input type="file" (change)="onFileSelected($event)" />
+  <p *ngIf="fileUrl">File URL: <a [href]="fileUrl" target="_blank">{{ fileUrl }}</a></p>
+  <p *ngIf="error" style="color: red">{{ error }}</p>
+</div>
