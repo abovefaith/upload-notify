@@ -15,11 +15,11 @@ Technologies Used:
 Getting Started:
 1. Clone the repository:
    
-   git clone https://github.com/abovefaith/uploadnotify.git   
+   git clone https://github.com/abovefaith/upload-notify.git   
 
 2. Navigate to the project directory:
    
-   cd uploadnotify   
+   cd upload-notify   
 
 3. Install dependencies:
    
