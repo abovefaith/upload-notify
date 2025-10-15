@@ -1,6 +1,27 @@
-<div>
-  <h2>Upload File to Civo Object Store</h2>
-  <input type="file" (change)="onFileSelected($event)" />
-  <p *ngIf="fileUrl">File URL: <a [href]="fileUrl" target="_blank">{{ fileUrl }}</a></p>
-  <p *ngIf="error" style="color: red">{{ error }}</p>
+<div class="upload-container">
+  <h2>Manage Files in "tests" Folder</h2>
+
+  <input type="file" (change)="onFileSelected($event)" [disabled]="loading" />
+  <p *ngIf="message" [style.color]="message.includes('❌') ? 'red' : 'green'">
+    {{ message }}
+  </p>
+
+  <hr />
+
+  <button (click)="refreshList()" [disabled]="loading">🔄 Refresh</button>
+  <button (click)="deleteAll()" [disabled]="files.length === 0 || loading">
+    🧹 Delete All
+  </button>
+
+  <ul *ngIf="files.length > 0; else emptyList">
+    <li *ngFor="let file of files">
+      {{ file }}
+      <button (click)="deleteFile(file)">🗑️ Delete</button>
+    </li>
+  </ul>
+
+  <ng-template #emptyList>
+    <p>No files in "tests" folder.</p>
+  </ng-template>
 </div>
+
