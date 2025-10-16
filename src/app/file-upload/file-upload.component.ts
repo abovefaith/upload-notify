@@ -1,15 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { UploadService } from '../services/upload.service';
 import { NgFor, NgIf } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-file-upload',
   standalone: true,
   templateUrl: './file-upload.component.html',
   styleUrls: ['./file-upload.component.scss'],
-  imports: [NgIf, NgFor],
+  imports: [NgIf, NgFor, FormsModule],
 })
 export class FileUploadComponent implements OnInit {
+  folderName = 'profile_pictures'; // default folder, can be changed dynamically
+  // :profile_pictures, kenwide-materials, kenwide-courses,
   files: string[] = [];
   message: string | null = null;
   loading = false;
@@ -21,7 +24,7 @@ export class FileUploadComponent implements OnInit {
   }
 
   async refreshList() {
-    this.files = await this.uploadService.listTestFiles();
+    this.files = await this.uploadService.listFiles(this.folderName);
   }
 
   async onFileSelected(event: Event): Promise<void> {
@@ -32,8 +35,8 @@ export class FileUploadComponent implements OnInit {
       this.message = null;
 
       try {
-        await this.uploadService.uploadFile(file);
-        this.message = `✅ Uploaded ${file.name}`;
+        await this.uploadService.uploadFile(this.folderName, file);
+        this.message = `✅ Uploaded ${file.name} to "${this.folderName}"`;
         await this.refreshList();
       } catch (error: any) {
         this.message = `❌ Upload failed: ${error.message}`;
@@ -45,16 +48,16 @@ export class FileUploadComponent implements OnInit {
 
   async deleteFile(fileKey: string) {
     const fileName = fileKey.split('/').pop()!;
-    if (!confirm(`Delete ${fileName}?`)) return;
+    if (!confirm(`Delete ${fileName} from folder "${this.folderName}"?`)) return;
 
-    await this.uploadService.deleteTestFile(fileName);
+    await this.uploadService.deleteFile(this.folderName, fileName);
     await this.refreshList();
   }
 
   async deleteAll() {
-    if (!confirm('Delete ALL files in the tests folder?')) return;
+    if (!confirm(`Delete ALL files in folder "${this.folderName}"?`)) return;
 
-    await this.uploadService.deleteAllTestFiles();
+    await this.uploadService.deleteAllFiles(this.folderName);
     await this.refreshList();
   }
 }

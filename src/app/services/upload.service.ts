@@ -1,4 +1,3 @@
-
 import { Injectable } from '@angular/core';
 import {
   S3Client,
@@ -15,7 +14,6 @@ import {
 })
 export class UploadService {
   private readonly BUCKET_NAME = 'kenwide';
-  private readonly FOLDER_NAME = 'tests/';
   private readonly s3Client: S3Client;
 
   constructor() {
@@ -23,55 +21,62 @@ export class UploadService {
       region: 'nyc-1',
       endpoint: 'https://objectstore.nyc1.civo.com',
       credentials: {
-        accessKeyId: 'DMLRUYZY3H7P0UOAB21P', // ⚠️ Replace with env variables in production
-        secretAccessKey: '9UEAxFEcUGdxPIHghKpCZaCWubNBo7JDzBpA5PNT', // ⚠️ Replace with env variables
+        accessKeyId: 'DMLRUYZY3H7P0UOAB21P', // Use env vars in production
+        secretAccessKey: '9UEAxFEcUGdxPIHghKpCZaCWubNBo7JDzBpA5PNT', // Use env vars
       },
       forcePathStyle: true,
     });
   }
 
-  /** Upload file to "tests/" folder */
-  async uploadFile(file: File): Promise<void> {
+  private normalizeFolder(folderName: string): string {
+    return folderName.endsWith('/') ? folderName : folderName + '/';
+  }
+
+  async uploadFile(folderName: string, file: File): Promise<string> {
+    const key = this.normalizeFolder(folderName) + file.name;
+
     const params: PutObjectCommandInput = {
       Bucket: this.BUCKET_NAME,
-      Key: this.FOLDER_NAME + file.name,
+      Key: key,
       Body: file,
       ACL: ObjectCannedACL.public_read,
     };
 
     await this.s3Client.send(new PutObjectCommand(params));
-    console.log(`✅ Uploaded: ${file.name}`);
+    console.log(` Uploaded: ${key}`);
+
+    return key;
   }
 
-  /** List all files in "tests/" */
-  async listTestFiles(): Promise<string[]> {
+  async listFiles(folderName: string): Promise<string[]> {
+    const prefix = this.normalizeFolder(folderName);
+
     const command = new ListObjectsV2Command({
       Bucket: this.BUCKET_NAME,
-      Prefix: this.FOLDER_NAME,
+      Prefix: prefix,
     });
 
     const response = await this.s3Client.send(command);
     const fileKeys = response.Contents?.map((obj) => obj.Key!).filter(Boolean) || [];
 
-    console.log('📂 Files found:', fileKeys);
+    console.log(' Files found:', fileKeys);
     return fileKeys;
   }
 
-  /** Delete one file by name */
-  async deleteTestFile(fileName: string): Promise<void> {
-    const key = this.FOLDER_NAME + fileName;
+  async deleteFile(folderName: string, fileName: string): Promise<void> {
+    const key = this.normalizeFolder(folderName) + fileName;
+
     const command = new DeleteObjectCommand({
       Bucket: this.BUCKET_NAME,
       Key: key,
     });
 
     await this.s3Client.send(command);
-    console.log(`🗑️ Deleted file: ${fileName}`);
+    console.log(` Deleted file: ${key}`);
   }
 
-  /** Delete all files in "tests/" */
-  async deleteAllTestFiles(): Promise<void> {
-    const fileKeys = await this.listTestFiles();
+  async deleteAllFiles(folderName: string): Promise<void> {
+    const fileKeys = await this.listFiles(folderName);
     if (fileKeys.length === 0) {
       console.log('Nothing to delete.');
       return;
@@ -85,7 +90,6 @@ export class UploadService {
     });
 
     await this.s3Client.send(command);
-    console.log('🧹 All files deleted from tests/');
+    console.log(` All files deleted from ${folderName}/`);
   }
 }
-

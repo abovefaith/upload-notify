@@ -1,5 +1,10 @@
 <div class="upload-container">
-  <h2>Manage Files in "tests" Folder</h2>
+  <h2>Manage Files in Folder: "{{ folderName }}"</h2>
+
+  <label>
+    Folder name:
+    <input [(ngModel)]="folderName" placeholder="Enter folder name" />
+  </label>
 
   <input type="file" (change)="onFileSelected($event)" [disabled]="loading" />
   <p *ngIf="message" [style.color]="message.includes('❌') ? 'red' : 'green'">
@@ -21,7 +26,6 @@
   </ul>
 
   <ng-template #emptyList>
-    <p>No files in "tests" folder.</p>
+    <p>No files in folder "{{ folderName }}".</p>
   </ng-template>
 </div>
-
